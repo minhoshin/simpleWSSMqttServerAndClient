@@ -1,0 +1,17 @@
+{
+  "name": "mqtt-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "mqtt-connection": "^3.2.0",
+    "websocket-stream": "^5.1.1",
+    "ws": "^3.3.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
