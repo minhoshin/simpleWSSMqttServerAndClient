@@ -4,35 +4,28 @@
 var websocket = require('websocket-stream')
 var WebSocketServer = require('ws').Server
 var Connection = require('mqtt-connection')
+var http = require('http');
 var server = http.createServer()
 
 var wss = new WebSocketServer({server: server})
 
-if (handler) {
-    server.on('client', handler)
-}
 
 wss.on('connection', function (ws) {
     var stream = websocket(ws)
-
-    // 타임 아웃 설절 5분
-    stream.setTimeout(1000 * 60 * 5)
-
     var connection = new Connection(stream)
 
-    handle(connection);
-
-    stream.on('timeout', function () {
-        connection.destroy()
-    })
+    handle(connection)
 })
 
 function handle (client) {
 
-    // client connected
+    // client connectedCreate a client instance
     client.on('connect', function (packet) {
         // acknowledge the connect packet
+
         client.connack({ returnCode: 0 })
+
+        client.publish({topic :"hello", payload : "connect"})
     })
 
     // client published
@@ -53,12 +46,18 @@ function handle (client) {
         client.suback({ granted: [packet.qos], messageId: packet.messageId })
     })
 
-    // timeout idle streams after 5 minutes
-    stream.setTimeout(1000 * 60 * 5)
-
     // connection error handling
     client.on('close', function () { client.destroy() })
     client.on('error', function () { client.destroy() })
     client.on('disconnect', function () { client.destroy() })
 
 }
+
+
+function testSendMessage(client) {
+    client.publish({payload : "hello"});
+}
+
+server.listen(8000, function () {
+    console.log('Listening on %d', server.address().port);
+})

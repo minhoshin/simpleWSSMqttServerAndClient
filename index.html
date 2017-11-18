@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>mqtt client</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
+</head>
+<body>
+</body>
+
+<script>
+
+    // 연결 됐을 시
+    function onMQTTConnectHandler() {
+        // Once a connection has been made, make a subscription and send a message.
+        console.log("onMQTTConnectHandler");
+    }
+
+    // 메세지 수신 시
+    function onMQTTMessageArrivedHandler(message) {
+        console.log(message)
+    }
+
+    const mqttUrl = 'ws://localhost:8000/mqtt';
+    const topic = "hello"
+
+    // 클라이언트 설정
+    let client = new Paho.MQTT.Client(mqttUrl, topic);
+
+    // 이벤트 핸들러 설정
+    client.onConnectionLost = onMQTTConnectionLostHandler;
+    client.onMessageArrived = onMQTTMessageArrivedHandler;
+
+    // 연걸시
+    client.connect({onSuccess:onMQTTConnectHandler});
+
+    // 연결을 잃었을 시
+    function onMQTTConnectionLostHandler(responseObject) {
+        if (responseObject.errorCode !== 0) {
+            console.log("onMQTTConnectionLostHandler:"+responseObject.errorMessage);
+            client.connect({onSuccess:onMQTTConnectHandler});
+        }
+    }
+
+</script>
+</html>
+
