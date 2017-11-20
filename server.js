@@ -5,9 +5,25 @@ var websocket = require('websocket-stream')
 var WebSocketServer = require('ws').Server
 var Connection = require('mqtt-connection')
 var http = require('http');
-var server = http.createServer()
+var server = http.createServer(function (request, response) {
+
+    let jsonData = "";
+    request.on("data", (data) => jsonData+= data)
+    request.on("end", () => {
+        if (request.url === "/hello") {
+            const reqJson = JSON.parse(jsonData)
+            sentHello(reqJson.msg)
+        }
+        jsonData = "";
+        response.end()
+    })
+
+})
+
 
 var wss = new WebSocketServer({server: server})
+
+var topicMap = {};
 
 
 wss.on('connection', function (ws) {
@@ -24,8 +40,12 @@ function handle (client) {
         // acknowledge the connect packet
 
         client.connack({ returnCode: 0 })
-
-        client.publish({topic :"hello", payload : "connect"})
+        let topicPool = topicMap['hello']
+        if(topicPool) {
+            topicPool.push(client)
+        } else {
+            topicMap['hello'] = [client];
+        }
     })
 
     // client published
@@ -47,16 +67,27 @@ function handle (client) {
     })
 
     // connection error handling
-    client.on('close', function () { client.destroy() })
+    client.on('close', function () {
+        console.log("close")
+        client.destroy()
+    })
+
     client.on('error', function () { client.destroy() })
-    client.on('disconnect', function () { client.destroy() })
+    client.on('disconnect', function () {
+        console.log('disconnect')
+        client.destroy()
+    })
 
 }
 
-
-function testSendMessage(client) {
-    client.publish({payload : "hello"});
+function sentHello(msg) {
+    let topicPool = topicMap["hello"];
+    if (!topicPool) return;
+    topicPool.forEach((clt) => {
+        clt.publish({topic :"hello", payload : msg});
+    });
 }
+
 
 server.listen(8000, function () {
     console.log('Listening on %d', server.address().port);
