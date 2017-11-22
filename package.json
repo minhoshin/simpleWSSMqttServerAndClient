@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "mows": "0.0.6",
     "mqtt": "^2.14.0",
     "mqtt-connection": "^3.2.0",
     "websocket-stream": "^5.1.1",
