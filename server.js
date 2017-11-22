@@ -20,10 +20,15 @@ var server = http.createServer(function (request, response) {
 
 })
 
-
 var wss = new WebSocketServer({server: server})
 
 var topicMap = {};
+setInterval(function () {
+    for (let topic in topicMap) {
+        const clientList = topicMap[topic];
+        console.log(`현재 ${topic} 접속 클라이어트 갯수 : ${clientList.length}`)
+    }
+}, 500)
 
 wss.on("connection", function (ws) {
     var stream = websocket(ws)
