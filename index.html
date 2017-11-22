@@ -15,11 +15,14 @@
 
 <script>
     document.getElementById("msg-input").addEventListener("keyup", function msgInput(e) {
-        e.which = e.which || e.keyCode;
+        e.which = e.which || e.keyCode
         if(e.which == 13) {
             fetch("http://localhost:8000/hello", {
                 method : "post",
                 body : JSON.stringify({msg : this.value})
+            }).catch((e) => {
+                console.log("에러임")
+                console.error(e)
             }).then(() => this.value = "")
         }
     })
