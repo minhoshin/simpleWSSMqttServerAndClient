@@ -14,12 +14,14 @@
 </body>
 
 <script>
+    let sid = "hello"
+
     document.getElementById("msg-input").addEventListener("keyup", function msgInput(e) {
         e.which = e.which || e.keyCode
         if(e.which == 13) {
             fetch("http://localhost:8000/hello", {
                 method : "post",
-                body : JSON.stringify({msg : this.value})
+                body : JSON.stringify({msg : this.value, sid : sid})
             }).catch((e) => {
                 console.log("에러임")
                 console.error(e)
@@ -36,21 +38,27 @@
     // 메세지 수신 시
     function onMQTTMessageArrivedHandler(message) {
         try {
-            const msg = message.payloadString
-            var node = document.createElement("li")
-            var textnode = document.createTextNode(msg)
-            node.appendChild(textnode)
-            document.getElementById("msg-cont").appendChild(node)
+
+            if(message.destinationName === "sid") {
+                sid = JSON.parse(message.payloadString).sid
+            } else {
+                const msg = message.payloadString
+                var node = document.createElement("li")
+                var textnode = document.createTextNode(msg)
+                node.appendChild(textnode)
+                document.getElementById("msg-cont").appendChild(node)
+            }
+
         } catch (e) {
             console.error(e);
         }
     }
 
     const mqttUrl = 'ws://localhost:8000/mqtt';
-    const topic = "hello"
+
 
     // 클라이언트 설정
-    let client = new Paho.MQTT.Client(mqttUrl, topic);
+    let client = new Paho.MQTT.Client(mqttUrl, sid);
 
     // 이벤트 핸들러 설정
     client.onConnectionLost = onMQTTConnectionLostHandler;

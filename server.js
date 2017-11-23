@@ -1,6 +1,7 @@
 /**
  * Created by rkdgusrnrlrl on 17. 11. 18.
  */
+var uuid = require("uuid")
 var websocket = require("websocket-stream")
 var WebSocketServer = require("ws").Server
 var Connection = require("mqtt-connection")
@@ -12,7 +13,8 @@ var server = http.createServer(function (request, response) {
     request.on("end", () => {
         if (request.url === "/hello") {
             const reqJson = JSON.parse(jsonData)
-            sentHello(reqJson.msg)
+            console.log(reqJson)
+            sentHello(reqJson.sid, reqJson.msg)
         }
         jsonData = "";
         response.end()
@@ -43,7 +45,7 @@ function handle (client) {
     client.on("connect", function (packet) {
         // acknowledge the connect packet
 
-        client.id = packet.clientId
+        client.id = uuid.v1();
 
         client.connack({ returnCode: 0 })
         let topicPool = topicMap["hello"]
@@ -52,7 +54,7 @@ function handle (client) {
         } else {
             topicMap["hello"] = [client];
         }
-
+        console.log(client.id)
         client.publish({topic : "sid", payload : JSON.stringify({sid : client.id})})
     })
 
@@ -89,11 +91,13 @@ function handle (client) {
 
 }
 
-function sentHello(msg) {
+function sentHello(sid, msg) {
     let topicPool = topicMap["hello"];
     if (!topicPool) return;
-    topicPool.forEach((clt) => {
-        clt.publish({topic :"hello", payload : msg});
+    topicPool.forEach((clt, index) => {
+        if (clt.id !== sid) {
+            clt.publish({topic :"hello", payload : JSON.stringify({msg: msg, sid : sid})});
+        }
     });
 }
 
