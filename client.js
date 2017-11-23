@@ -5,8 +5,12 @@ const topic = "hello"
 
 let client = mows.createClient(mqttUrl)
 
-client.subscribe("hello")
+let sid = ""
 
 client.on('message', (topic, msg) => {
     console.log(msg)
+    if (topic === "sid") {
+        sid = JSON.parse(msg).sid
+    }
+    console.log(`sid : ${sid}`)
 })

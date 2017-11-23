@@ -43,6 +43,8 @@ function handle (client) {
     client.on("connect", function (packet) {
         // acknowledge the connect packet
 
+        client.id = packet.clientId
+
         client.connack({ returnCode: 0 })
         let topicPool = topicMap["hello"]
         if(topicPool) {
@@ -50,6 +52,8 @@ function handle (client) {
         } else {
             topicMap["hello"] = [client];
         }
+
+        client.publish({topic : "sid", payload : JSON.stringify({sid : client.id})})
     })
 
     // client published
@@ -73,6 +77,7 @@ function handle (client) {
     // connection error handling
     client.on("close", function () {
         console.log("close")
+        topicMap["hello"] = topicMap["hello"].filter((cli) => cli.id !== client.id )
         client.destroy()
     })
 
