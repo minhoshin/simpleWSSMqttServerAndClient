@@ -1,9 +1,13 @@
 const express = require('express');
 const app = express();
 
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
+app.engine('html', require('ejs').renderFile);
+
 
 app.get('/', function(req, res){
-    res.send('Hello World');
+    res.render('index.html')
 });
 
 

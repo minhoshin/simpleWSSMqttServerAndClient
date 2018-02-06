@@ -18,7 +18,7 @@
 
     document.getElementById("msg-input").addEventListener("keyup", function msgInput(e) {
         e.which = e.which || e.keyCode
-        if(e.which == 13) {
+        if(e.which === 13) {
             fetch("http://localhost:8000/hello", {
                 method : "post",
                 body : JSON.stringify({msg : this.value, sid : sid})
@@ -43,8 +43,8 @@
                 sid = JSON.parse(message.payloadString).sid
             } else {
                 const msg = message.payloadString
-                var node = document.createElement("li")
-                var textnode = document.createTextNode(msg)
+                const node = document.createElement("li")
+                const textnode = document.createTextNode(msg)
                 node.appendChild(textnode)
                 document.getElementById("msg-cont").appendChild(node)
             }
