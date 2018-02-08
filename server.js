@@ -5,22 +5,27 @@ var uuid = require("uuid")
 var websocket = require("websocket-stream")
 var WebSocketServer = require("ws").Server
 var Connection = require("mqtt-connection")
-var http = require("http");
-var server = http.createServer(function (request, response) {
+var bodyParser = require('body-parser')
 
-    let jsonData = "";
-    request.on("data", (data) => jsonData+= data)
-    request.on("end", () => {
-        if (request.url === "/hello") {
-            const reqJson = JSON.parse(jsonData)
-            console.log(reqJson)
-            sentHello(reqJson.sid, reqJson.msg)
-        }
-        jsonData = "";
-        response.end()
-    })
+const express = require('express')
+const app = express()
+app.use(bodyParser.json())
 
+app.post('/hello', function(req, res){
+    const reqJson = req.body
+    console.log(reqJson)
+    sentHello(reqJson.sid, reqJson.msg)
+    res.end()
 })
+
+const http = require('http');
+const server = http.createServer(app);
+
+server.listen(8000, function () {
+    console.log("Listening on %d", 8000)
+})
+
+
 
 var wss = new WebSocketServer({server: server})
 
@@ -101,7 +106,3 @@ function sentHello(sid, msg) {
     });
 }
 
-
-server.listen(8000, function () {
-    console.log("Listening on %d", server.address().port);
-})
