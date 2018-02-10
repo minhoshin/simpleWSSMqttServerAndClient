@@ -1,12 +1,13 @@
 /**
  * Created by rkdgusrnrlrl on 17. 11. 18.
  */
-var uuid = require("uuid")
-var websocket = require("websocket-stream")
-var WebSocketServer = require("ws").Server
-var Connection = require("mqtt-connection")
-var bodyParser = require('body-parser')
+const uuid = require("uuid")
+const websocket = require("websocket-stream")
+const WebSocketServer = require("ws").Server
+const Connection = require("mqtt-connection")
+const bodyParser = require('body-parser')
 
+//relay
 const express = require('express')
 const app = express()
 app.use(bodyParser.json())
@@ -14,7 +15,7 @@ app.use(bodyParser.json())
 app.post('/hello', function(req, res){
     const reqJson = req.body
     console.log(reqJson)
-    sentHello(reqJson.sid, reqJson.msg)
+    sentMessage(reqJson.sid, reqJson.msg)
     res.end()
 })
 
@@ -25,11 +26,21 @@ server.listen(8000, function () {
     console.log("Listening on %d", 8000)
 })
 
+function sentMessage(sid, msg) {
+    let topicPool = topicMap["hello"];
+    if (!topicPool) return;
+    topicPool.forEach((clt) => {
+        if (clt.id !== sid) {
+            clt.publish({topic :"hello", payload : JSON.stringify({msg: msg, sid : sid})});
+        }
+    });
+}
 
 
-var wss = new WebSocketServer({server: server})
+//broker
+const wss = new WebSocketServer({server: server})
 
-var topicMap = {};
+let topicMap = {};
 setInterval(function () {
     for (let topic in topicMap) {
         const clientList = topicMap[topic];
@@ -38,8 +49,8 @@ setInterval(function () {
 }, 500)
 
 wss.on("connection", function (ws) {
-    var stream = websocket(ws)
-    var connection = new Connection(stream)
+    const stream = websocket(ws)
+    const connection = new Connection(stream)
 
     handle(connection)
 })
@@ -96,13 +107,5 @@ function handle (client) {
 
 }
 
-function sentHello(sid, msg) {
-    let topicPool = topicMap["hello"];
-    if (!topicPool) return;
-    topicPool.forEach((clt, index) => {
-        if (clt.id !== sid) {
-            clt.publish({topic :"hello", payload : JSON.stringify({msg: msg, sid : sid})});
-        }
-    });
-}
+
 
