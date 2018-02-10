@@ -46,8 +46,9 @@
                 sid = JSON.parse(message.payloadString).sid
             } else {
                 const msg = message.payloadString
+                const jsonMsg = JSON.parse(msg)
                 const node = document.createElement("li")
-                const textnode = document.createTextNode(msg)
+                const textnode = document.createTextNode(jsonMsg.msg)
                 node.appendChild(textnode)
                 document.getElementById("msg-cont").appendChild(node)
             }
