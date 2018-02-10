@@ -39,6 +39,33 @@ server.listen(8000, function () {
     console.log("Listening on %d", 8000)
 })
 
+
+
+
+//broker
+// 현재 접속된 사용자 로그를 5초 간격으로 찍어줌
+setInterval(function () {
+    for (let topic in topicMap) {
+        const clientList = topicMap[topic];
+        console.log(`현재 ${topic} 접속 클라이어트 갯수 : ${clientList.length}`)
+    }
+}, 500)
+
+
+// MQTT 브로커를 웹소켓 으로 랩핑
+const wss = new WebSocketServer({server: server})
+
+wss.on("connection", function (ws) {
+    const stream = websocket(ws)
+    const connection = new Connection(stream)
+
+    handle(connection)
+})
+
+// 토픽 별로 클라이언트를 수집
+let topicMap = {};
+
+// hello 토픽에 등록 된 사용자들에게 메시지 전송
 function sentMessage(sid, name, msg) {
     let topicPool = topicMap["hello"];
     if (!topicPool) return;
@@ -49,25 +76,7 @@ function sentMessage(sid, name, msg) {
     });
 }
 
-
-//broker
-const wss = new WebSocketServer({server: server})
-
-let topicMap = {};
-setInterval(function () {
-    for (let topic in topicMap) {
-        const clientList = topicMap[topic];
-        console.log(`현재 ${topic} 접속 클라이어트 갯수 : ${clientList.length}`)
-    }
-}, 500)
-
-wss.on("connection", function (ws) {
-    const stream = websocket(ws)
-    const connection = new Connection(stream)
-
-    handle(connection)
-})
-
+// MQTT 이벤트 핸들러
 function handle (client) {
 
     // client connectedCreate a client instance
