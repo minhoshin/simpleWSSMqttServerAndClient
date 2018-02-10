@@ -95,7 +95,7 @@
             } else {
                 const msg = message.payloadString
                 const jsonMsg = JSON.parse(msg)
-                const msgEl = `<p><span>sender</span>&nbsp;&nbsp;${jsonMsg.msg}</p>`
+                const msgEl = `<p><span>${jsonMsg.name}</span>&nbsp;&nbsp;${jsonMsg.msg}</p>`
                 document.getElementById("msg-cont").insertAdjacentHTML("beforeend", msgEl)
             }
 

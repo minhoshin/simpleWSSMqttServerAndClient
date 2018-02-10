@@ -7,6 +7,10 @@ const WebSocketServer = require("ws").Server
 const Connection = require("mqtt-connection")
 const bodyParser = require('body-parser')
 
+//ram db
+let clientInfos = [];
+
+
 //relay
 const express = require('express')
 const app = express()
@@ -15,7 +19,11 @@ app.use(bodyParser.json())
 app.post('/hello', function(req, res){
     const reqJson = req.body
     console.log(reqJson)
-    sentMessage(reqJson.sid, reqJson.msg)
+
+    const clientInfo = clientInfos.find((info) => info.sid === reqJson.sid);
+    if (!clientInfo) return res.status(500).send('not reconize sid');
+
+    sentMessage(reqJson.sid, clientInfo.name, reqJson.msg)
     res.end()
 })
 
@@ -26,12 +34,12 @@ server.listen(8000, function () {
     console.log("Listening on %d", 8000)
 })
 
-function sentMessage(sid, msg) {
+function sentMessage(sid, name, msg) {
     let topicPool = topicMap["hello"];
     if (!topicPool) return;
     topicPool.forEach((clt) => {
         if (clt.id !== sid) {
-            clt.publish({topic :"hello", payload : JSON.stringify({msg: msg, sid : sid})});
+            clt.publish({topic :"hello", payload : JSON.stringify({msg: msg, name : name, sid : sid})});
         }
     });
 }
@@ -62,6 +70,7 @@ function handle (client) {
         // acknowledge the connect packet
 
         client.id = uuid.v1();
+        client.name = "anonymous"+new Date().getTime();
 
         client.connack({ returnCode: 0 })
         let topicPool = topicMap["hello"]
@@ -71,6 +80,8 @@ function handle (client) {
             topicMap["hello"] = [client];
         }
         console.log(client.id)
+
+        clientInfos.push({sid : client.id, name : client.name})
         client.publish({topic : "sid", payload : JSON.stringify({sid : client.id})})
     })
 
