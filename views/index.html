@@ -6,17 +6,65 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
 </head>
+<style type="text/css">
+    .refresh {
+        border: 1px solid #3366FF;
+        border-left: 4px solid #3366FF;
+        color: green;
+        font-family: tahoma;
+        font-size: 12px;
+        height: 225px;
+        overflow: auto;
+        width: 400px;
+        padding:10px;
+        background-color:#FFFFFF;
+    }
+    #post_button{
+        border: 1px solid #3366FF;
+        background-color:#3366FF;
+        width: 100px;
+        color:#FFFFFF;
+        font-weight: bold;
+        margin-left: -105px; padding-top: 4px; padding-bottom: 4px;
+        cursor:pointer;
+    }
+    #textb{
+        border: 1px solid #3366FF;
+        border-left: 4px solid #3366FF;
+        width: 320px;
+        margin-top: 10px; padding-top: 5px; padding-bottom: 5px; padding-left: 5px; width: 415px;
+    }
+    #texta{
+        border: 1px solid #3366FF;
+        border-left: 4px solid #3366FF;
+        width: 410px;
+        margin-bottom: 10px;
+        padding:5px;
+    }
+    p{
+        border-top: 1px solid #EEEEEE;
+        margin-top: 0px; margin-bottom: 5px; padding-top: 5px;
+    }
+    span{
+        font-weight: bold;
+        color: #3B5998;
+    }
+</style>
 <body>
-    <div id="msg-cont"></div>
-    <div>
-        <input id="msg-input">
+    <!--
+    <input name="sender" type="text" id="texta" value=""/>
+    -->
+    <div id="msg-cont" class="refresh">
+
     </div>
+    <input name="message" type="text" id="textb"/>
+    <input name="submit" type="submit" value="Chat" id="post_button" />
 </body>
 
 <script>
     let sid = "hello"
 
-    document.getElementById("msg-input").addEventListener("keyup", function msgInput(e) {
+    document.getElementById("textb").addEventListener("keyup", function msgInput(e) {
         e.which = e.which || e.keyCode
         if(e.which === 13) {
             fetch("http://localhost:8000/hello", {
@@ -47,10 +95,8 @@
             } else {
                 const msg = message.payloadString
                 const jsonMsg = JSON.parse(msg)
-                const node = document.createElement("li")
-                const textnode = document.createTextNode(jsonMsg.msg)
-                node.appendChild(textnode)
-                document.getElementById("msg-cont").appendChild(node)
+                const msgEl = `<p><span>sender</span>&nbsp;&nbsp;${jsonMsg.msg}</p>`
+                document.getElementById("msg-cont").insertAdjacentHTML("beforeend", msgEl)
             }
 
         } catch (e) {
@@ -59,7 +105,6 @@
     }
 
     const mqttUrl = 'ws://localhost:8000/mqtt';
-
 
     // 클라이언트 설정
     let client = new Paho.MQTT.Client(mqttUrl, sid);
