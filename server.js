@@ -23,7 +23,6 @@ app.post('/hello', function(req, res){
     res.header("Access-Control-Allow-Methods", "GET, PUT, POST");
 
     const reqJson = req.body
-    console.log(reqJson)
 
     const clientInfo = clientInfos.find((info) => info.sid === reqJson.sid);
     if (!clientInfo) return res.status(500).send('not reconize sid');
@@ -119,14 +118,12 @@ function handle (client) {
 
     // connection error handling
     client.on("close", function () {
-        console.log("close")
         topicMap["hello"] = topicMap["hello"].filter((cli) => cli.id !== client.id )
         client.destroy()
     })
 
     client.on("error", function () { client.destroy() })
     client.on("disconnect", function () {
-        console.log("disconnect")
         client.destroy()
     })
 
